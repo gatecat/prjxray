@@ -262,7 +262,7 @@ def propagate_IOB_SING(database, tiles_by_grid):
         if tile in seen_iobs:
             continue
 
-        if database[tile]["type"] not in ["LIOB33", "RIOB33"]:
+        if database[tile]["type"] not in ["LIOB33", "RIOB33", "LIOB18", "RIOB18"]:
             continue
 
         while True:
@@ -298,24 +298,44 @@ def propagate_IOB_SING(database, tiles_by_grid):
         database[top_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
         database[top_tile]['bits']['CLB_IO_CLK']['words'] = 2
         database[top_tile]['bits']['CLB_IO_CLK']['offset'] = 99
-        database[top_tile]['bits']['CLB_IO_CLK']['alias'] = {
-            'type': database[prev_tile]['type'],
-            'start_offset': 0,
-            'sites': {
-                'IOB33_Y0': 'IOB33_Y1',
+        if database[tile]["type"] in ("LIOB18", "RIOB18"):
+            database[top_tile]['bits']['CLB_IO_CLK']['alias'] = {
+                'type': database[prev_tile]['type'],
+                'start_offset': 0,
+                'sites': {
+                    'IOB18_Y0': 'IOB18_Y1',
+                }
             }
-        }
 
-        database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
-        database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
-        database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
-        database[bottom_tile]['bits']['CLB_IO_CLK']['alias'] = {
-            'type': database[prev_tile]['type'],
-            'start_offset': 2,
-            'sites': {
-                'IOB33_Y0': 'IOB33_Y0',
+            database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+            database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
+            database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
+            database[bottom_tile]['bits']['CLB_IO_CLK']['alias'] = {
+                'type': database[prev_tile]['type'],
+                'start_offset': 2,
+                'sites': {
+                    'IOB18_Y0': 'IOB18_Y0',
+                }
             }
-        }
+        else:
+            database[top_tile]['bits']['CLB_IO_CLK']['alias'] = {
+                'type': database[prev_tile]['type'],
+                'start_offset': 0,
+                'sites': {
+                    'IOB33_Y0': 'IOB33_Y1',
+                }
+            }
+
+            database[bottom_tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
+            database[bottom_tile]['bits']['CLB_IO_CLK']['words'] = 2
+            database[bottom_tile]['bits']['CLB_IO_CLK']['offset'] = 0
+            database[bottom_tile]['bits']['CLB_IO_CLK']['alias'] = {
+                'type': database[prev_tile]['type'],
+                'start_offset': 2,
+                'sites': {
+                    'IOB33_Y0': 'IOB33_Y0',
+                }
+            }
 
 
 def propagate_IOI_SING(database, tiles_by_grid):
@@ -332,7 +352,7 @@ def propagate_IOI_SING(database, tiles_by_grid):
         if tile in seen_iois:
             continue
 
-        if database[tile]["type"] not in ["LIOI3", "RIOI3"]:
+        if database[tile]["type"] not in ["LIOI3", "RIOI3", "LIOI", "RIOI"]:
             continue
 
         while True:
@@ -397,6 +417,10 @@ def propagate_IOI_Y9(database, tiles_by_grid):
     """
     ioi_tiles = os.getenv('XRAY_IOI3_TILES')
 
+    ioi18_tiles = os.getenv('XRAY_IOI_TILES')
+    if ioi18_tiles is not None:
+        ioi_tiles += ioi18_tiles
+
     assert ioi_tiles is not None, "XRAY_IOI3_TILES env variable not set"
     tiles = ioi_tiles.split(" ")
 
@@ -411,7 +435,6 @@ def propagate_IOI_Y9(database, tiles_by_grid):
         database[tile]['bits']['CLB_IO_CLK'] = copy.deepcopy(bits)
         database[tile]['bits']['CLB_IO_CLK']['words'] = 4
         database[tile]['bits']['CLB_IO_CLK']['offset'] = 18
-
 
 def alias_HCLKs(database):
     """ Generate HCLK aliases for HCLK_[LR] subsets.

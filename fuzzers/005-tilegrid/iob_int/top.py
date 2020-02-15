@@ -26,7 +26,7 @@ def gen_sites():
 
         sites = []
         for site_name, site_type in gridinfo.sites.items():
-            if site_type == 'IDELAYE2':
+            if site_type in ('IDELAYE2', 'IDELAYE2_FINEDELAY'):
                 sites.append(site_name)
 
         if len(sites) == 0:

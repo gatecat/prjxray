@@ -32,6 +32,7 @@ endif
 
 ifeq (${XRAY_DATABASE}, kintex7)
 TILEGRID_TDB_DEPENDENCIES += orphan_int_column/build/segbits_tilegrid.tdb
+TILEGRID_TDB_DEPENDENCIES += iob18/build/segbits_tilegrid.tdb
 else
 # Disable DSP INT fuzzer on kintex7.  It doesn't work, and isn't required.
 TILEGRID_TDB_DEPENDENCIES += dsp_int/build/segbits_tilegrid.tdb
@@ -65,6 +66,9 @@ cfg/build/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 
 iob/build/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd iob && $(MAKE)
+
+iob18/build/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
+	cd iob18 && $(MAKE)
 
 iob_int/build/segbits_tilegrid.tdb: ${BASICDB_TILEGRID}
 	cd iob_int && $(MAKE)
@@ -143,6 +147,7 @@ clean:
 	cd clb_int && $(MAKE) clean
 	cd cfg && $(MAKE) clean
 	cd iob && $(MAKE) clean
+	cd iob18 && $(MAKE) clean
 	cd iob_int && $(MAKE) clean
 	cd ioi && $(MAKE) clean
 	cd mmcm && $(MAKE) clean

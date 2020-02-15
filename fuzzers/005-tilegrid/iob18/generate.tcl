@@ -7,9 +7,6 @@ proc make_io_pin_sites {} {
         if {[llength $site] == 0} {
             continue
         }
-        if [string match IOB33* [get_property SITE_TYPE $site]] {
-            dict append io_pin_sites $site $pad
-        }
         if [string match IOB18* [get_property SITE_TYPE $site]] {
             dict append io_pin_sites $site $pad
         }
@@ -22,6 +19,8 @@ proc load_pin_lines {} {
     # IOB_X0Y129 do[0] output
 
     set fp [open "params.csv" r]
+    gets $fp line
+
     set pin_lines {}
     for {gets $fp line} {$line != ""} {gets $fp line} {
         lappend pin_lines [split $line ","]
@@ -39,8 +38,8 @@ proc loc_pins {} {
         set line [lindex $pin_lines $idx]
         puts "$line"
 
-        set site_str [lindex $line 3]
-        set pin_str [lindex $line 4]
+        set site_str [lindex $line 2]
+        set pin_str [lindex $line 3]
 
         # Have: site
         # Want: pin for site
@@ -52,11 +51,7 @@ proc loc_pins {} {
         set tile [get_tiles -of_objects $site]
 
         set pin [dict get $io_pin_sites $site]
-        if [string match IOB18* [get_property SITE_TYPE $site]] {
-            set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS18" $port
-        } else {
-            set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS33" $port
-        }
+        set_property -dict "PACKAGE_PIN $pin IOSTANDARD LVCMOS18" $port
     }
 }
 

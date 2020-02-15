@@ -114,6 +114,9 @@ case "$1" in
 	riob33)
 		sed < "$2" > "$tmp1" -e 's/^IOB33\./RIOB33./' ;;
 
+	riob18)
+		sed < "$2" > "$tmp1" -e 's/^IOB18\./RIOB18./' ;;
+
 	lioi3)
 		sed < "$2" > "$tmp1" -e 's/^IOI3\./LIOI3./' ;;
 

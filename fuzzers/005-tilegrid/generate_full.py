@@ -419,7 +419,7 @@ def propagate_IOI_Y9(database, tiles_by_grid):
 
     ioi18_tiles = os.getenv('XRAY_IOI_TILES')
     if ioi18_tiles is not None:
-        ioi_tiles += ioi18_tiles
+        ioi_tiles += " " + ioi18_tiles
 
     assert ioi_tiles is not None, "XRAY_IOI3_TILES env variable not set"
     tiles = ioi_tiles.split(" ")

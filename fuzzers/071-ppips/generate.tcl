@@ -163,7 +163,7 @@ foreach tile_type {INT_L INT_R  BRAM_INT_INTERFACE_L BRAM_INT_INTERFACE_R \
     }
 }
 
-foreach tile_type {HCLK_IOI3} {
+foreach tile_type {HCLK_IOI3 HCLK_IOI} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]
@@ -172,7 +172,8 @@ foreach tile_type {HCLK_IOI3} {
 }
 
 foreach tile_type {RIOI3 LIOI3 LIOI3_TBYTETERM RIOI3_TBYTETERM \
-            LIOI3_TBYTESRC RIOI3_TBYTESRC LIOI3_SING RIOI3_SING} {
+            LIOI3_TBYTESRC RIOI3_TBYTESRC LIOI3_SING RIOI3_SING \
+            RIOI RIOI_SING RIOI_TBYTETERM RIOI_TBYTESRC} {
     set tiles [get_tiles -filter "TILE_TYPE == $tile_type"]
     if {[llength $tiles] != 0} {
         set tile [lindex $tiles 0]

@@ -44,6 +44,7 @@ proc loc_pins {} {
         set drive [lindex $line 5]
         set slew [lindex $line 6]
         set pulltype [lindex $line 7]
+        set vccaux [lindex $line 8]
 
         # Have: site
         # Want: pin for site
@@ -60,6 +61,7 @@ proc loc_pins {} {
         lappend props PACKAGE_PIN $pin
         lappend props IOSTANDARD $iostandard
         lappend props PULLTYPE $pulltype
+        lappend props VCCAUX_IO $vccaux
 
         if {$drive != "None"} {
             lappend props DRIVE $drive

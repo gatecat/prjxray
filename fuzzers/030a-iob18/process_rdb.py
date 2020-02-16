@@ -69,6 +69,15 @@ def main():
             if ('.SSTL15' in l or '.SSTL135' in l or '.LVCMOS' in l
                     or '.LVTTL' in l or '.LVDS' in l) and 'IOB_' in l:
                 iostandard_lines.append(l)
+            elif '.VRP' in l:
+                # Hack around SING issues
+                feature = get_name(l)
+                bits = parse_bits(l)
+                new_bits = []
+                for bit in bits:
+                    sb = bit.split('_')
+                    new_bits.append('%s_%d' % (sb[0], int(sb[1]) + 64))
+                print('%s %s' % (feature, ' '.join(new_bits)))
             else:
                 print(l.strip())
 

@@ -78,6 +78,8 @@ def run():
     slews = ['FAST', 'SLOW']
     pulls = ["NONE", "KEEPER", "PULLDOWN", "PULLUP"]
 
+    vccaux = random.choice(["NORMAL", "HIGH"])
+
     luts = lut_maker.LutMaker()
 
     connects = io.StringIO()
@@ -126,6 +128,7 @@ def run():
             p['tile'] = tile
             p['site'] = site
             p['type'] = site_bels[site_type]
+            p['vccaux'] = vccaux
 
             if p['type'] is not None and p['type'].endswith('DS'):
                 iostandard_site = random.choice(diff_map[iostandard])
@@ -248,6 +251,7 @@ def run():
                         p['DRIVE'],
                         verilog.unquote(p['SLEW']) if p['SLEW'] else None,
                         verilog.unquote(p['PULLTYPE']),
+                        vccaux,
                     ))
             params['tiles'].append(p)
 

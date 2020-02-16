@@ -50,6 +50,7 @@ def main():
     iobanks = {}
     site_to_iobank = {}
     iobank_iostandards = {}
+    iobank_vccaux = {}
     with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
         for l in f:
             iob_site, iobank = l.strip().split(',')
@@ -95,6 +96,9 @@ def main():
                 iostandard = iostandard[5:]
 
             iobank_iostandards[site_to_iobank[site]].add(iostandard)
+
+            if 'vccaux' in d:
+                iobank_vccaux[site_to_iobank[site]] = d['vccaux']
 
             if 'IN_TERM' in d:
                 segmaker.add_site_group_zero(
@@ -284,9 +288,9 @@ def main():
             vr_tiles = ["RIOB18_SING_X43Y50", "RIOB18_SING_X43Y99"]
         if vr_tiles is not None:
             segmk.add_tile_tag(
-                vr_tiles[0], 'VRP_USED', "_DCI" in iostandard)
+                vr_tiles[0], 'IOB_Y0.VRP_USED', "_DCI" in iostandard)
             segmk.add_tile_tag(
-                vr_tiles[1], 'VRN_USED', "_DCI" in iostandard)
+                vr_tiles[1], 'IOB_Y1.VRN_USED', "_DCI" in iostandard)
     # For IOBANK's with no active VREF, clear all VREF options.
     for cmt, (_, hclk_cmt_tile) in cmt_to_idelay.items():
         if cmt in cmt_vref_active:

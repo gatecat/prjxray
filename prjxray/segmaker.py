@@ -318,6 +318,7 @@ class Segmaker:
                     'RAMB18': name_bram18,
                     'IOB': name_y0y1,
                     'IDELAY': name_y0y1,
+                    'ODELAY': name_y0y1,
                     'ILOGIC': name_y0y1,
                     'OLOGIC': name_y0y1,
                 }.get(site_prefix, name_default)()
@@ -354,6 +355,8 @@ class Segmaker:
 
             if tile_type_norm in ['LIOB33', 'RIOB33']:
                 tile_type_norm = 'IOB33'
+            if tile_type_norm in ['LIOB18', 'RIOB18']:
+                tile_type_norm = 'IOB18'
 
             if tile_type_norm in ['LIOI3', 'RIOI3']:
                 tile_type_norm = 'IOI3'
@@ -361,6 +364,13 @@ class Segmaker:
                 tile_type_norm = 'IOI3'
             if tile_type_norm in ['LIOI3_TBYTETERM', 'RIOI3_TBYTETERM']:
                 tile_type_norm = 'IOI3'
+
+            if tile_type_norm in ['LIOI', 'RIOI']:
+                tile_type_norm = 'IOI'
+            if tile_type_norm in ['LIOI_TBYTESRC', 'RIOI_TBYTESRC']:
+                tile_type_norm = 'IOI'
+            if tile_type_norm in ['LIOI_TBYTETERM', 'RIOI_TBYTETERM']:
+                tile_type_norm = 'IOI'
 
             # ignore dummy tiles (ex: VBRK)
             if len(tiledata['bits']) == 0:

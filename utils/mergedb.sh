@@ -135,6 +135,15 @@ case "$1" in
 	rioi3_tbyteterm)
 		sed < "$2" > "$tmp1" -e 's/^IOI3\./RIOI3_TBYTETERM./' ;;
 
+	rioi)
+		sed < "$2" > "$tmp1" -e 's/^IOI\./RIOI./' ;;
+
+	rioi_tbytesrc)
+		sed < "$2" > "$tmp1" -e 's/^IOI\./RIOI_TBYTESRC./' ;;
+
+	rioi_tbyteterm)
+		sed < "$2" > "$tmp1" -e 's/^IOI\./RIOI_TBYTETERM./' ;;
+
 	cmt_top_r_upper_t)
 		sed < "$2" > "$tmp1" -e 's/^CMT_UPPER_T\./CMT_TOP_R_UPPER_T./' ;;
 

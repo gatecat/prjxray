@@ -104,13 +104,13 @@ def main():
                     ], 'NONE', d['IN_TERM'])
 
             if d['type'] is None:
-                segmk.add_site_tag(site, 'INOUT', 0)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 0)
             elif d['type'] == 'IBUF':
-                segmk.add_site_tag(site, 'INOUT', 0)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 0)
@@ -123,7 +123,7 @@ def main():
                     segmk.add_site_tag(
                         site, 'ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
             elif d['type'] == 'IBUFDS':
-                segmk.add_site_tag(site, 'INOUT', 0)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 if iostandard != 'LVDS':
                     segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                     segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
@@ -132,14 +132,14 @@ def main():
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
                 segmk.add_tile_tag(d['tile'], 'IN_DIFF', 1)
             elif d['type'] == 'OBUF':
-                segmk.add_site_tag(site, 'INOUT', 0)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
                 segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 0)
                 segmk.add_tile_tag(d['tile'], 'OUT_TRUE_DIFF', 0)
             elif d['type'] == 'OBUFDS':
-                segmk.add_site_tag(site, 'INOUT', 0)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 if iostandard != 'LVDS':
                     segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                     segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
@@ -151,7 +151,7 @@ def main():
                     segmk.add_tile_tag(d['tile'], 'OUT_TRUE_DIFF', 1)
                     segmk.add_tile_tag(d['tile'], 'OUT_TRUE_TDIFF', 0)
             elif d['type'] == 'OBUFTDS':
-                segmk.add_site_tag(site, 'INOUT', 0)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 if iostandard != 'LVDS':
                     segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                     segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
@@ -163,7 +163,7 @@ def main():
                     segmk.add_tile_tag(d['tile'], 'OUT_TRUE_DIFF', 1)
                     segmk.add_tile_tag(d['tile'], 'OUT_TRUE_TDIFF', 1)
             elif d['type'] == 'IOBUF_DCIEN':
-                segmk.add_site_tag(site, 'INOUT', 1)
+                segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
@@ -275,6 +275,18 @@ def main():
         iostandard = list(iobank_iostandards[iobank])[0]
         segmk.add_tile_tag(
             hclk_cmt_tile, 'DCI', "_DCI" in iostandard)
+
+        # FIXME:
+        vr_tiles = None
+        if iobank == 33:
+            vr_tiles = ["RIOB18_SING_X43Y0", "RIOB18_SING_X43Y49"]
+        elif iobank == 34:
+            vr_tiles = ["RIOB18_SING_X43Y50", "RIOB18_SING_X43Y99"]
+        if vr_tiles is not None:
+            segmk.add_tile_tag(
+                vr_tiles[0], 'VRP_USED', "_DCI" in iostandard)
+            segmk.add_tile_tag(
+                vr_tiles[1], 'VRN_USED', "_DCI" in iostandard)
     # For IOBANK's with no active VREF, clear all VREF options.
     for cmt, (_, hclk_cmt_tile) in cmt_to_idelay.items():
         if cmt in cmt_vref_active:

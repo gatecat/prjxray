@@ -9,12 +9,12 @@ build/iobanks.txt: write_io_banks.tcl
 	cd build/ && ${XRAY_VIVADO} -mode batch -source ../write_io_banks.tcl
 
 build/segbits_riob18.rdb: $(SPECIMENS_OK)
-	${XRAY_SEGMATCH} -c 12 -o build/segbits_riob18.rdb $$(find -name segdata_riob18.txt)
+	${XRAY_SEGMATCH} -c 19 -o build/segbits_riob18.rdb $$(find -name segdata_riob18*.txt)
 
 build/segbits_riob18.db: build/segbits_riob18.rdb process_rdb.py bits.dbf
 	python3 process_rdb.py build/segbits_riob18.rdb > build/segbits_riob18_processed.rdb
 	${XRAY_DBFIXUP} --db-root build --zero-db bits.dbf --seg-fn-in build/segbits_riob18_processed.rdb --seg-fn-out $@
-	${XRAY_MASKMERGE} build/mask_riob18.db $$(find -name segdata_riob18.txt)
+	${XRAY_MASKMERGE} build/mask_riob18.db $$(find -name segdata_riob18*.txt)
 
 build/segbits_hclk_ioi.rdb: $(SPECIMENS_OK)
 	${XRAY_SEGMATCH} -c 4 -o build/segbits_hclk_ioi.rdb $$(find -name segdata_hclk_ioi.txt)

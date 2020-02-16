@@ -95,7 +95,7 @@ def main():
             enum = feature_parts[4]
             sites[site][group][(iostandard, enum)] = bits
         elif group in ['IN', 'IN_DIFF', 'IN_ONLY', 'IN_USE', 'OUT',
-                       'STEPDOWN']:
+                       'STEPDOWN', 'INOUT']:
             sites[site][group][(iostandard, None)] = bits
         else:
             assert False, group

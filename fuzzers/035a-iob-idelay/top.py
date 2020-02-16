@@ -18,11 +18,11 @@ def gen_sites():
 
     tile_list = []
     for tile_name in sorted(grid.tiles()):
-        if "IOB33" not in tile_name or "SING" in tile_name:
+        if ("IOB33" not in tile_name and "IOB18" not in tile_name) or "SING" in tile_name:
             continue
         tile_list.append(tile_name)
 
-    get_xy = util.create_xy_fun('[LR]IOB33_')
+    get_xy = util.create_xy_fun('[LR]IOB\\d\\d_')
     tile_list.sort(key=get_xy)
 
     for iob_tile_name in tile_list:
@@ -30,17 +30,18 @@ def gen_sites():
             grid.loc_of_tilename(iob_tile_name))
 
         # Find IOI tile adjacent to IOB
-        for suffix in ["IOI3", "IOI3_TBYTESRC", "IOI3_TBYTETERM"]:
+        for suffix in ["IOI3", "IOI3_TBYTESRC", "IOI3_TBYTETERM", "IOI", "IOI_TBYTESRC", "IOI_TBYTETERM"]:
             try:
                 ioi_tile_name = iob_tile_name.replace("IOB33", suffix)
+                ioi_tile_name = iob_tile_name.replace("IOB18", suffix)
                 ioi_gridinfo = grid.gridinfo_at_loc(
                     grid.loc_of_tilename(ioi_tile_name))
                 break
             except KeyError:
                 pass
 
-        iob33s = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33S"][0]
-        iob33m = [k for k, v in iob_gridinfo.sites.items() if v == "IOB33M"][0]
+        iob33s = [k for k, v in iob_gridinfo.sites.items() if v in ("IOB33S", "IOB18S")][0]
+        iob33m = [k for k, v in iob_gridinfo.sites.items() if v in ("IOB33M", "IOB18M")][0]
         idelay_s = iob33s.replace("IOB", "IDELAY")
         idelay_m = iob33m.replace("IOB", "IDELAY")
 

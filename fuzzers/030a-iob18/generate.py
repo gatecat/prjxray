@@ -50,7 +50,8 @@ def main():
     iobanks = {}
     site_to_iobank = {}
     iobank_iostandards = {}
-    iobank_vccaux = {}
+    vccaux = ""
+    iobank_inused = set()
     with open(os.path.join(os.getenv('FUZDIR'), 'build', 'iobanks.txt')) as f:
         for l in f:
             iob_site, iobank = l.strip().split(',')
@@ -98,7 +99,7 @@ def main():
             iobank_iostandards[site_to_iobank[site]].add(iostandard)
 
             if 'vccaux' in d:
-                iobank_vccaux[site_to_iobank[site]] = d['vccaux']
+                vccaux = d['vccaux']
 
             if 'IN_TERM' in d:
                 segmaker.add_site_group_zero(
@@ -126,6 +127,7 @@ def main():
                     segmk.add_site_tag(site, 'IBUF_LOW_PWR', d['IBUF_LOW_PWR'])
                     segmk.add_site_tag(
                         site, 'ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
+                iobank_inused.add(site_to_iobank[site])
             elif d['type'] == 'IBUFDS':
                 segmk.add_site_tag(site, '{}.INOUT'.format(iostandard), 0)
                 if iostandard != 'LVDS':
@@ -171,7 +173,7 @@ def main():
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-
+                iobank_inused.add(site_to_iobank[site])
             if d['type'] is not None:
                 segmaker.add_site_group_zero(
                     segmk, site, "PULLTYPE.",
@@ -236,9 +238,13 @@ def main():
 
     # For each IOBANK with an active VREF set the feature
     cmt_vref_active = set()
+    ext_vref_banks = set()
     with open('iobank_vref.csv') as f:
         for l in f:
             iobank, vref = l.strip().split(',')
+            if vref == "None":
+                ext_vref_banks.add(int(iobank))
+                continue
             iobank = int(iobank)
 
             cmt = None
@@ -256,6 +262,8 @@ def main():
 
             opt = 'VREF.V_{:d}_MV'.format(int(float(vref) * 1000))
             segmk.add_tile_tag(hclk_cmt_tile, opt, 1)
+
+    any_dci_used = False
 
     for iobank in iobank_iostandards:
         if len(iobank_iostandards[iobank]) == 0:
@@ -279,18 +287,25 @@ def main():
         iostandard = list(iobank_iostandards[iobank])[0]
         segmk.add_tile_tag(
             hclk_cmt_tile, 'DCI', "_DCI" in iostandard)
-
+        any_dci_used |= "_DCI" in iostandard
         # FIXME:
         vr_tiles = None
+        ref_tile = None
         if iobank == 33:
             vr_tiles = ["RIOB18_SING_X43Y0", "RIOB18_SING_X43Y49"]
+            ref_tiles = ["RIOB18_X43Y11", "RIOB18_X43Y37"]
         elif iobank == 34:
             vr_tiles = ["RIOB18_SING_X43Y50", "RIOB18_SING_X43Y99"]
+            ref_tiles = ["RIOB18_X43Y61", "RIOB18_X43Y87"]
         if vr_tiles is not None:
             segmk.add_tile_tag(
                 vr_tiles[0], 'IOB_Y0.VRP_USED', "_DCI" in iostandard)
             segmk.add_tile_tag(
                 vr_tiles[1], 'IOB_Y1.VRN_USED', "_DCI" in iostandard)
+        if ref_tiles is not None:
+            if iostandard in ('SSTL135', 'SSTL135_DCI', 'SSTL15', 'SSTL15_DCI') and iobank in iobank_inused:
+                for tile in ref_tiles:
+                    segmk.add_tile_tag(tile, 'IOB_Y0.VREF_DRIVER', iobank in ext_vref_banks)
     # For IOBANK's with no active VREF, clear all VREF options.
     for cmt, (_, hclk_cmt_tile) in cmt_to_idelay.items():
         if cmt in cmt_vref_active:
@@ -308,6 +323,12 @@ def main():
     segmk.compile(bitfilter=bitfilter)
     segmk.write(allow_empty=True)
 
-
+    # Use a special bitfilter for CFG tiles
+    segmk = Segmaker("design.bits")
+    cfg_center_mid = "CFG_CENTER_MID_X61Y84"
+    segmk.add_tile_tag(
+            cfg_center_mid, 'DCI_USED', any_dci_used)
+    segmk.compile(bitfilter=lambda f, w: True)
+    segmk.write(allow_empty=True)
 if __name__ == "__main__":
     main()

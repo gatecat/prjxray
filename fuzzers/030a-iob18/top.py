@@ -25,6 +25,10 @@ def gen_sites():
         sites = {}
         for site_name, site_type in gridinfo.sites.items():
             if site_type in ['IOB18S', 'IOB18M']:
+                ypos = int(site_name[site_name.rfind("Y")+1:])
+                if ypos % 50 in (11, 37):
+                    # VREF
+                    continue
                 sites[site_type] = site_name
 
         if sites:
@@ -103,13 +107,14 @@ def run():
                     .675,
                     .75,
                     .90,
+                    None,
                 ))
 
     any_idelay = False
     for tile, sites in gen_sites():
         site_bels = {}
         for site_type in sites:
-            if site_type.endswith('M'):
+            if site_type.endswith('M') and 'IOB18S' in sites:
                 if iostandard in diff_map:
                     site_bels[site_type] = random.choice(
                         tile_types + ['IBUFDS', 'OBUFDS', 'OBUFTDS'])

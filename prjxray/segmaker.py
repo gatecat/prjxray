@@ -355,7 +355,7 @@ class Segmaker:
 
             if tile_type_norm in ['LIOB33', 'RIOB33']:
                 tile_type_norm = 'IOB33'
-            if tile_type_norm in ['LIOB18', 'RIOB18']:
+            if tile_type_norm in ['LIOB18', 'RIOB18', 'LIOB18_SING', 'RIOB18_SING']:
                 tile_type_norm = 'IOB18'
 
             if tile_type_norm in ['LIOI3', 'RIOI3']:

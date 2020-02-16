@@ -59,6 +59,7 @@ def run():
     ]
 
     diff_map = {
+        "LVCMOS18": ["LVDS"],
         "SSTL135": ["DIFF_SSTL135"],
         "SSTL15": ["DIFF_SSTL15"],
     }
@@ -189,11 +190,14 @@ def run():
                 p['bpad_wire'] = 'do[{}]'.format(o_idx)
                 o_idx += 1
                 p['iwire'] = luts.get_next_output_net()
-                if drives is not None:
+                if drives is not None and iostandard_site != "LVDS":
                     p['DRIVE'] = random.choice(drives)
                 else:
                     p['DRIVE'] = None
-                p['SLEW'] = verilog.quote(random.choice(slews))
+                if iostandard_site != "LVDS":
+                    p['SLEW'] = verilog.quote(random.choice(slews))
+                else:
+                    p['SLEW'] = None
             elif p['type'] == 'OBUFTDS':
                 p['pad_wire'] = 'do[{}]'.format(o_idx)
                 o_idx += 1
@@ -202,11 +206,14 @@ def run():
                 p['tristate_wire'] = random.choice(
                     ('0', luts.get_next_output_net()))
                 p['iwire'] = luts.get_next_output_net()
-                if drives is not None:
+                if drives is not None and iostandard_site != "LVDS":
                     p['DRIVE'] = random.choice(drives)
                 else:
                     p['DRIVE'] = None
-                p['SLEW'] = verilog.quote(random.choice(slews))
+                if iostandard_site != "LVDS":
+                    p['SLEW'] = verilog.quote(random.choice(slews))
+                else:
+                    p['SLEW'] = None
             elif p['type'] == 'IOBUF_DCIEN':
                 p['pad_wire'] = 'dio[{}]'.format(io_idx)
                 p['iwire'] = luts.get_next_output_net()
@@ -334,34 +341,63 @@ module top(input wire [`N_DI-1:0] di, output wire [`N_DO-1:0] do, inout wire [`N
             );'''.format(**p),
                 file=connects)
         elif p['type'] == 'OBUFDS':
-            print(
-                '''
-        (* KEEP, DONT_TOUCH *)
-        OBUFDS #(
-            .IOSTANDARD({IOSTANDARD}),
-            {DRIVE_STR}
-            .SLEW({SLEW})
-        ) obufds_{site} (
-            .O({pad_wire}),
-            .OB({bpad_wire}),
-            .I({iwire})
-            );'''.format(**p),
-                file=connects)
+            if p['SLEW']:
+                print(
+                        '''
+                (* KEEP, DONT_TOUCH *)
+                OBUFDS #(
+                    .IOSTANDARD({IOSTANDARD}),
+                    {DRIVE_STR}
+                    .SLEW({SLEW})
+                ) obufds_{site} (
+                    .O({pad_wire}),
+                    .OB({bpad_wire}),
+                    .I({iwire})
+                    );'''.format(**p),
+                        file=connects)
+            else:
+                print(
+                    '''
+            (* KEEP, DONT_TOUCH *)
+            OBUFDS #(
+                {DRIVE_STR}
+                .IOSTANDARD({IOSTANDARD})
+            ) obufds_{site} (
+                .O({pad_wire}),
+                .OB({bpad_wire}),
+                .I({iwire})
+                );'''.format(**p),
+                    file=connects)
         elif p['type'] == 'OBUFTDS':
-            print(
-                '''
-        (* KEEP, DONT_TOUCH *)
-        OBUFTDS #(
-            .IOSTANDARD({IOSTANDARD}),
-            {DRIVE_STR}
-            .SLEW({SLEW})
-        ) obufds_{site} (
-            .O({pad_wire}),
-            .OB({bpad_wire}),
-            .T({tristate_wire}),
-            .I({iwire})
-            );'''.format(**p),
-                file=connects)
+            if p['SLEW']:
+                print(
+                    '''
+            (* KEEP, DONT_TOUCH *)
+            OBUFTDS #(
+                .IOSTANDARD({IOSTANDARD}),
+                {DRIVE_STR}
+                .SLEW({SLEW})
+            ) obufds_{site} (
+                .O({pad_wire}),
+                .OB({bpad_wire}),
+                .T({tristate_wire}),
+                .I({iwire})
+                );'''.format(**p),
+                    file=connects)
+            else:
+                print(
+                    '''
+            (* KEEP, DONT_TOUCH *)
+            OBUFTDS #(
+                {DRIVE_STR}
+                .IOSTANDARD({IOSTANDARD})
+            ) obufds_{site} (
+                .O({pad_wire}),
+                .OB({bpad_wire}),
+                .T({tristate_wire}),
+                .I({iwire})
+                );'''.format(**p),
+                    file=connects)                
         elif p['type'] == 'IOBUF_DCIEN':
             print(
                 '''

@@ -34,7 +34,7 @@ def drives_for_iostandard(iostandard):
         drives = [2, 4, 6, 8, 12, 16]
     elif iostandard == 'LVCMOS12':
         drives = [2, 4, 6, 8]
-    elif iostandard in ('SSTL135', 'SSTL135_DCI', 'SSTL15', 'SSTL15_DCI'):
+    elif iostandard in ('SSTL135', 'SSTL135_DCI', 'SSTL15', 'SSTL15_DCI', 'LVDS'):
         return ['_FIXED']
     else:
         drives = [2, 4, 6, 8, 12, 16]
@@ -124,11 +124,12 @@ def main():
                         site, 'ZIBUF_LOW_PWR', 1 ^ d['IBUF_LOW_PWR'])
             elif d['type'] == 'IBUFDS':
                 segmk.add_site_tag(site, 'INOUT', 0)
-                segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
+                if iostandard != 'LVDS':
+                    segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
+                    segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
                 #segmk.add_site_tag(site, '{}.IN'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 1)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 0)
-                segmk.add_site_tag(site, '{}.IN_ONLY'.format(iostandard), 1)
                 segmk.add_tile_tag(d['tile'], 'IN_DIFF', 1)
             elif d['type'] == 'OBUF':
                 segmk.add_site_tag(site, 'INOUT', 0)
@@ -136,20 +137,31 @@ def main():
                 segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
                 segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
                 segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 0)
+                segmk.add_tile_tag(d['tile'], 'OUT_TRUE_DIFF', 0)
             elif d['type'] == 'OBUFDS':
                 segmk.add_site_tag(site, 'INOUT', 0)
-                segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
-                segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
-                segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 0)
+                if iostandard != 'LVDS':
+                    segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
+                    segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
+                    segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 1)
+                    segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 0)
+                    segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
+                else:
+                    segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 0)
+                    segmk.add_tile_tag(d['tile'], 'OUT_TRUE_DIFF', 1)
+                    segmk.add_tile_tag(d['tile'], 'OUT_TRUE_TDIFF', 0)
             elif d['type'] == 'OBUFTDS':
                 segmk.add_site_tag(site, 'INOUT', 0)
-                segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
-                segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
-                segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 1)
-                segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 1)
+                if iostandard != 'LVDS':
+                    segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
+                    segmk.add_site_tag(site, '{}.IN'.format(iostandard), 0)
+                    segmk.add_site_tag(site, '{}.OUT'.format(iostandard), 1)
+                    segmk.add_tile_tag(d['tile'], 'OUT_DIFF', 1)
+                    segmk.add_tile_tag(d['tile'], 'OUT_TDIFF', 1)
+                else:
+                    segmk.add_site_tag(site, '{}.IN_DIFF'.format(iostandard), 0)
+                    segmk.add_tile_tag(d['tile'], 'OUT_TRUE_DIFF', 1)
+                    segmk.add_tile_tag(d['tile'], 'OUT_TRUE_TDIFF', 1)
             elif d['type'] == 'IOBUF_DCIEN':
                 segmk.add_site_tag(site, 'INOUT', 1)
                 segmk.add_site_tag(site, '{}.IN_USE'.format(iostandard), 1)
@@ -162,7 +174,7 @@ def main():
                     ("NONE", "KEEPER", "PULLDOWN", "PULLUP"), "PULLDOWN",
                     verilog.unquote(d['PULLTYPE']))
 
-            if d['type'] in [None, 'IBUF', 'IBUFDS']:
+            if d['type'] in [None, 'IBUF', 'IBUFDS'] or iostandard == "LVDS":
                 continue
 
             drive_opts = set()
@@ -179,14 +191,16 @@ def main():
             drive_opts.add(mk_drive_opt("SSTL15", None))
             drive_opts.add(mk_drive_opt("SSTL15_DCI", None))
 
+            drive_opts.add(mk_drive_opt("LVDS", None))
+
             segmaker.add_site_group_zero(
                 segmk, site, '', drive_opts, mk_drive_opt('LVCMOS18', '12'),
                 mk_drive_opt(iostandard, d['DRIVE']))
-
-            for opt in ["SLOW", "FAST"]:
-                segmk.add_site_tag(
-                    site, iostandard + ".SLEW." + opt, opt == verilog.unquote(
-                        d['SLEW']))
+            if d['SLEW']:
+                for opt in ["SLOW", "FAST"]:
+                    segmk.add_site_tag(
+                        site, iostandard + ".SLEW." + opt, opt == verilog.unquote(
+                            d['SLEW']))
 
             if 'ibufdisable_wire' in d:
                 segmk.add_site_tag(
@@ -252,6 +266,9 @@ def main():
             continue
 
         _, hclk_cmt_tile = cmt_to_idelay[cmt]
+
+        if "LVDS" in  iobank_iostandards[iobank]:
+            iobank_iostandards[iobank].remove("LVDS")
 
         assert len(iobank_iostandards[iobank]) == 1, iobank_iostandards[iobank]
 

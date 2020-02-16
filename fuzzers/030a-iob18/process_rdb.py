@@ -67,7 +67,7 @@ def main():
     with open(args.input_rdb) as f:
         for l in f:
             if ('.SSTL15' in l or '.SSTL135' in l or '.LVCMOS' in l
-                    or '.LVTTL' in l) and 'IOB_' in l:
+                    or '.LVTTL' in l or '.LVDS' in l) and 'IOB_' in l:
                 iostandard_lines.append(l)
             else:
                 print(l.strip())
@@ -81,7 +81,8 @@ def main():
         iostandard = feature_parts[2]
 
         bits = parse_bits(l)
-        bits = filter_bits(site, bits)
+        if "IN_DIFF" not in feature:
+            bits = filter_bits(site, bits)
 
         if site not in sites:
             sites[site] = {}
@@ -101,6 +102,8 @@ def main():
 
     for site in sites:
         for iostandard, enum in sites[site]['DRIVE']:
+            if iostandard == "LVDS":
+                continue
             sites[site]['DRIVE'][(iostandard, enum)] |= sites[site]['OUT'][(
                 iostandard, None)]
 
@@ -148,6 +151,8 @@ def main():
 
     for site in sites:
         for iostandard, enum in sites[site]['DRIVE']:
+            if iostandard == "LVDS":
+                continue
             sites[site]['DRIVE'][(iostandard, enum)] |= sites[site]['IN_USE'][(
                 iostandard, None)]
 

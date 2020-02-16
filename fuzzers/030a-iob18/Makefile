@@ -26,7 +26,7 @@ pushdb:
 	${XRAY_MERGEDB} riob18 build/segbits_riob18.db
 	${XRAY_MERGEDB} mask_riob18 build/mask_riob18.db
 
-	${XRAY_MERGEDB} hclk_ioi3 build/segbits_hclk_ioi.db
+	${XRAY_MERGEDB} hclk_ioi build/segbits_hclk_ioi.db
 
 .PHONY: database pushdb
 

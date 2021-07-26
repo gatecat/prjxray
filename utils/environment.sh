@@ -43,6 +43,6 @@ if [ $(${XRAY_VIVADO} -h |grep Vivado |cut -d\  -f 2) != "v2017.2" ] ; then
     echo "Requires Vivado 2017.2. See https://github.com/SymbiFlow/prjxray/issues/14"
     # Can't exit since sourced script
     # Trash a key environment variable to preclude use
-    export XRAY_DIR="/bad/vivado/version"
+    #export XRAY_DIR="/bad/vivado/version"
     return
 fi

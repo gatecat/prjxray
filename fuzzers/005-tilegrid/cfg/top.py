@@ -37,7 +37,7 @@ module top();
         params[tile_name] = (site_name, isone)
         print(
             '''
-            (* KEEP, DONT_TOUCH, LOC = "{0}" *)
+            (* KEEP, DONT_TOUCH *)
             BSCANE2 #(
             .JTAG_CHAIN("{1}")
             )

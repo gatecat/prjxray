@@ -10,6 +10,9 @@ proc make_io_pin_sites {} {
         if [string match IOB33* [get_property SITE_TYPE $site]] {
             dict append io_pin_sites $site $pad
         }
+        if [string match IOB18* [get_property SITE_TYPE $site]] {
+            dict append io_pin_sites $site $pad
+        }
     }
     return $io_pin_sites
 }
@@ -88,6 +91,7 @@ proc run {} {
     set_property IS_ENABLED 0 [get_drc_checks {REQP-79}]
     set_property IS_ENABLED 0 [get_drc_checks {REQP-105}]
     set_property IS_ENABLED 0 [get_drc_checks {PDRC-26}]
+    set_property IS_ENABLED 0 [get_drc_checks {PDRC-158}]
 
     write_checkpoint -force design_pre_place.dcp
 

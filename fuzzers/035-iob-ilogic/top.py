@@ -23,8 +23,8 @@ def gen_sites():
         gridinfo = grid.gridinfo_at_loc(loc)
 
         for site_name, site_type in gridinfo.sites.items():
-            if site_type in ['IOB33S', 'IOB33M']:
-                yield tile_name, site_name
+            if site_type in ['IOB33S', 'IOB33M', 'IOB18S', 'IOB18M']:
+                yield tile_name, site_name, (site_type in ['IOB18S', 'IOB18M'])
 
 
 def write_params(params):
@@ -378,6 +378,18 @@ def run():
     else:
         drives = [4, 8, 12, 16]
 
+    iostandards18 = [
+        'LVCMOS12', 'LVCMOS15', 'LVCMOS18'
+    ]
+    iostandard18 = random.choice(iostandards18)
+
+    if iostandard18 in ['LVCMOS18']:
+        drives18 = [2, 4, 8, 12, 16]
+    elif iostandard18 == 'LVCMOS12':
+        drives18 = [2, 4, 8]
+    else:
+        drives18 = [2, 4, 8]
+
     slews = ['FAST', 'SLOW']
     pulls = ["NONE", "KEEPER", "PULLDOWN", "PULLUP"]
 
@@ -387,7 +399,7 @@ def run():
 
     tile_params = []
     params = []
-    for idx, (tile, site) in enumerate(gen_sites()):
+    for idx, (tile, site, is_18) in enumerate(gen_sites()):
         if idx == 0:
             continue
 
@@ -397,10 +409,16 @@ def run():
         p['ilogic_loc'] = site.replace('IOB', 'ILOGIC')
         p['ologic_loc'] = site.replace('IOB', 'OLOGIC')
         p['idelay_loc'] = site.replace('IOB', 'IDELAY')
-        p['IOSTANDARD'] = verilog.quote(iostandard)
-        p['PULLTYPE'] = verilog.quote(random.choice(pulls))
-        p['DRIVE'] = random.choice(drives)
-        p['SLEW'] = verilog.quote(random.choice(slews))
+        if is_18:
+            p['IOSTANDARD'] = verilog.quote(iostandard18)
+            p['PULLTYPE'] = verilog.quote(random.choice(pulls))
+            p['DRIVE'] = random.choice(drives18)
+            p['SLEW'] = verilog.quote(random.choice(slews))
+        else:
+            p['IOSTANDARD'] = verilog.quote(iostandard)
+            p['PULLTYPE'] = verilog.quote(random.choice(pulls))
+            p['DRIVE'] = random.choice(drives)
+            p['SLEW'] = verilog.quote(random.choice(slews))
 
         p['pad_wire'] = 'dio[{}]'.format(idx - 1)
         p['owire'] = 'do_buf[{}]'.format(idx - 1)
@@ -410,7 +428,7 @@ def run():
         params.append(p)
         tile_params.append(
             (
-                tile, site, p['pad_wire'], iostandard, p['DRIVE'],
+                tile, site, p['pad_wire'], iostandard18 if is_18 else iostandard, p['DRIVE'],
                 verilog.unquote(p['SLEW']) if p['SLEW'] else None,
                 verilog.unquote(p['PULLTYPE'])))
 

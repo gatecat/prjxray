@@ -33,6 +33,8 @@ def tagmap(tag):
 
     tag = tag.replace("LIOI3", "IOI3")
     tag = tag.replace("RIOI3", "IOI3")
+    tag = tag.replace("LIOI", "IOI")
+    tag = tag.replace("RIOI", "IOI")
 
     # TODO: Add other tag mappings
 
